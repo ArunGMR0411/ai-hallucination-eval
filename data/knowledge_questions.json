@@ -1,0 +1,364 @@
+{
+  "metadata": {
+    "total": 50,
+    "mode": "knowledge_based",
+    "categories": [
+      "Polars",
+      "SQL",
+      "Spark",
+      "Snowflake"
+    ]
+  },
+  "questions": [
+    {
+      "id": 1,
+      "category": "Polars",
+      "question": "What Polars method scans a CSV file lazily without loading into memory?",
+      "expectedOutput": "scan_csv",
+      "difficulty": "Medium"
+    },
+    {
+      "id": 2,
+      "category": "Polars",
+      "question": "What Polars method triggers execution of a lazy query plan?",
+      "expectedOutput": "collect",
+      "difficulty": "Easy"
+    },
+    {
+      "id": 3,
+      "category": "Polars",
+      "question": "What Polars expression selects all columns except specified ones?",
+      "expectedOutput": "exclude",
+      "difficulty": "Medium"
+    },
+    {
+      "id": 4,
+      "category": "Polars",
+      "question": "What Polars method creates a new column based on a condition without if-else?",
+      "expectedOutput": "when",
+      "difficulty": "Medium"
+    },
+    {
+      "id": 5,
+      "category": "Polars",
+      "question": "What Polars method performs a join and keeps all rows from both DataFrames?",
+      "expectedOutput": "join_outer",
+      "difficulty": "Hard"
+    },
+    {
+      "id": 6,
+      "category": "Polars",
+      "question": "What Polars expression applies a function over a sliding window?",
+      "expectedOutput": "rolling",
+      "difficulty": "Hard"
+    },
+    {
+      "id": 7,
+      "category": "Polars",
+      "question": "What Polars method converts eager DataFrame to lazy for query optimization?",
+      "expectedOutput": "lazy",
+      "difficulty": "Easy"
+    },
+    {
+      "id": 8,
+      "category": "Polars",
+      "question": "What Polars expression filters rows within each group separately?",
+      "expectedOutput": "filter",
+      "difficulty": "Medium"
+    },
+    {
+      "id": 9,
+      "category": "Polars",
+      "question": "What Polars method pivots longer format to wider without aggregation?",
+      "expectedOutput": "pivot",
+      "difficulty": "Hard"
+    },
+    {
+      "id": 10,
+      "category": "Polars",
+      "question": "What Polars expression performs element-wise operations across columns?",
+      "expectedOutput": "struct",
+      "difficulty": "Hard"
+    },
+    {
+      "id": 11,
+      "category": "Polars",
+      "question": "What Polars method explodes a list column into multiple rows?",
+      "expectedOutput": "explode",
+      "difficulty": "Medium"
+    },
+    {
+      "id": 12,
+      "category": "Polars",
+      "question": "What Polars expression casts column to a different data type?",
+      "expectedOutput": "cast",
+      "difficulty": "Easy"
+    },
+    {
+      "id": 13,
+      "category": "Polars",
+      "question": "What Polars method samples random rows with replacement option?",
+      "expectedOutput": "sample",
+      "difficulty": "Medium"
+    },
+    {
+      "id": 14,
+      "category": "Polars",
+      "question": "What Polars expression applies string operations on UTF-8 columns?",
+      "expectedOutput": "str",
+      "difficulty": "Easy"
+    },
+    {
+      "id": 15,
+      "category": "Polars",
+      "question": "What Polars method performs anti-join keeping only non-matching rows?",
+      "expectedOutput": "join_anti",
+      "difficulty": "Hard"
+    },
+    {
+      "id": 16,
+      "category": "SQL",
+      "question": "What SQL keyword retrieves unique values from a column?",
+      "expectedOutput": "DISTINCT",
+      "difficulty": "Easy"
+    },
+    {
+      "id": 17,
+      "category": "SQL",
+      "question": "What SQL clause filters results based on conditions?",
+      "expectedOutput": "WHERE",
+      "difficulty": "Easy"
+    },
+    {
+      "id": 18,
+      "category": "SQL",
+      "question": "What SQL keyword combines rows from two or more tables based on related column?",
+      "expectedOutput": "JOIN",
+      "difficulty": "Easy"
+    },
+    {
+      "id": 19,
+      "category": "SQL",
+      "question": "What SQL function returns the number of rows in a result set?",
+      "expectedOutput": "COUNT",
+      "difficulty": "Easy"
+    },
+    {
+      "id": 20,
+      "category": "SQL",
+      "question": "What SQL clause groups rows that have the same values?",
+      "expectedOutput": "GROUP BY",
+      "difficulty": "Medium"
+    },
+    {
+      "id": 21,
+      "category": "SQL",
+      "question": "What SQL clause filters grouped results?",
+      "expectedOutput": "HAVING",
+      "difficulty": "Medium"
+    },
+    {
+      "id": 22,
+      "category": "SQL",
+      "question": "What SQL keyword sorts query results?",
+      "expectedOutput": "ORDER BY",
+      "difficulty": "Easy"
+    },
+    {
+      "id": 23,
+      "category": "SQL",
+      "question": "What SQL function returns the maximum value in a column?",
+      "expectedOutput": "MAX",
+      "difficulty": "Easy"
+    },
+    {
+      "id": 24,
+      "category": "SQL",
+      "question": "What SQL keyword returns rows from the first query that are not in the second?",
+      "expectedOutput": "EXCEPT",
+      "difficulty": "Hard"
+    },
+    {
+      "id": 25,
+      "category": "SQL",
+      "question": "What SQL constraint ensures all values in a column are unique?",
+      "expectedOutput": "UNIQUE",
+      "difficulty": "Medium"
+    },
+    {
+      "id": 26,
+      "category": "SQL",
+      "question": "What SQL keyword adds a new column to an existing table?",
+      "expectedOutput": "ALTER TABLE",
+      "difficulty": "Medium"
+    },
+    {
+      "id": 27,
+      "category": "SQL",
+      "question": "What SQL function concatenates two or more strings?",
+      "expectedOutput": "CONCAT",
+      "difficulty": "Medium"
+    },
+    {
+      "id": 28,
+      "category": "SQL",
+      "question": "What SQL JOIN returns all rows when there is a match in either table?",
+      "expectedOutput": "FULL OUTER JOIN",
+      "difficulty": "Hard"
+    },
+    {
+      "id": 29,
+      "category": "SQL",
+      "question": "What SQL keyword limits the number of rows returned?",
+      "expectedOutput": "LIMIT",
+      "difficulty": "Easy"
+    },
+    {
+      "id": 30,
+      "category": "SQL",
+      "question": "What SQL clause is used for pattern matching with wildcards?",
+      "expectedOutput": "LIKE",
+      "difficulty": "Medium"
+    },
+    {
+      "id": 31,
+      "category": "Spark",
+      "question": "What Spark operation triggers immediate execution and returns results to driver?",
+      "expectedOutput": "action",
+      "difficulty": "Easy"
+    },
+    {
+      "id": 32,
+      "category": "Spark",
+      "question": "What Spark operation creates a new RDD but delays execution until action?",
+      "expectedOutput": "transformation",
+      "difficulty": "Easy"
+    },
+    {
+      "id": 33,
+      "category": "Spark",
+      "question": "What Spark component manages memory and CPU cores for each executor?",
+      "expectedOutput": "Executor",
+      "difficulty": "Medium"
+    },
+    {
+      "id": 34,
+      "category": "Spark",
+      "question": "What Spark persistence level stores data in memory and spills to disk?",
+      "expectedOutput": "MEMORY_AND_DISK",
+      "difficulty": "Medium"
+    },
+    {
+      "id": 35,
+      "category": "Spark",
+      "question": "What Spark transformation combines values with same key using a function?",
+      "expectedOutput": "reduceByKey",
+      "difficulty": "Medium"
+    },
+    {
+      "id": 36,
+      "category": "Spark",
+      "question": "What Spark concept represents the number of parallel tasks per stage?",
+      "expectedOutput": "parallelism",
+      "difficulty": "Hard"
+    },
+    {
+      "id": 37,
+      "category": "Spark",
+      "question": "What Spark component tracks lineage and schedules tasks across cluster?",
+      "expectedOutput": "Driver",
+      "difficulty": "Medium"
+    },
+    {
+      "id": 38,
+      "category": "Spark",
+      "question": "What Spark operation shuffles data across partitions for aggregation?",
+      "expectedOutput": "shuffle",
+      "difficulty": "Hard"
+    },
+    {
+      "id": 39,
+      "category": "Spark",
+      "question": "What Spark action returns first n elements from RDD to driver?",
+      "expectedOutput": "take",
+      "difficulty": "Easy"
+    },
+    {
+      "id": 40,
+      "category": "Spark",
+      "question": "What Spark transformation applies function to each partition independently?",
+      "expectedOutput": "mapPartitions",
+      "difficulty": "Hard"
+    },
+    {
+      "id": 41,
+      "category": "Snowflake",
+      "question": "What Snowflake clause filters results after window functions without subquery?",
+      "expectedOutput": "QUALIFY",
+      "difficulty": "Hard"
+    },
+    {
+      "id": 42,
+      "category": "Snowflake",
+      "question": "What Snowflake function returns the value with maximum associated measure?",
+      "expectedOutput": "MAX_BY",
+      "difficulty": "Hard"
+    },
+    {
+      "id": 43,
+      "category": "Snowflake",
+      "question": "What Snowflake clause groups by all non-aggregated columns automatically?",
+      "expectedOutput": "GROUP BY ALL",
+      "difficulty": "Hard"
+    },
+    {
+      "id": 44,
+      "category": "Snowflake",
+      "question": "What Snowflake clause selects all columns except specified ones?",
+      "expectedOutput": "EXCLUDE",
+      "difficulty": "Hard"
+    },
+    {
+      "id": 45,
+      "category": "Snowflake",
+      "question": "What Snowflake function returns the value with minimum associated measure?",
+      "expectedOutput": "MIN_BY",
+      "difficulty": "Hard"
+    },
+    {
+      "id": 46,
+      "category": "Snowflake",
+      "question": "What Snowflake feature allows querying data as it existed at past timestamp?",
+      "expectedOutput": "Time Travel",
+      "difficulty": "Medium"
+    },
+    {
+      "id": 47,
+      "category": "Snowflake",
+      "question": "What Snowflake clause renames columns in SELECT without AS keyword?",
+      "expectedOutput": "RENAME",
+      "difficulty": "Hard"
+    },
+    {
+      "id": 48,
+      "category": "Snowflake",
+      "question": "What Snowflake function flattens nested JSON arrays into rows?",
+      "expectedOutput": "FLATTEN",
+      "difficulty": "Medium"
+    },
+    {
+      "id": 49,
+      "category": "Snowflake",
+      "question": "What Snowflake object stores query results for reuse without recomputation?",
+      "expectedOutput": "Result Cache",
+      "difficulty": "Medium"
+    },
+    {
+      "id": 50,
+      "category": "Snowflake",
+      "question": "What Snowflake clause replaces columns with new expressions inline?",
+      "expectedOutput": "REPLACE",
+      "difficulty": "Hard"
+    }
+  ]
+}

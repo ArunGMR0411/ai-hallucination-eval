@@ -1,0 +1,67 @@
+{
+  "model": "gemini-2.5-flash",
+  "provider": "Google",
+  "evaluation_date": "2025-11-01",
+  "summary": {
+    "total": 100,
+    "correct": 89,
+    "hallucination": 9,
+    "format_violation": 1,
+    "refused": 1,
+    "accuracy": 0.89
+  },
+  "by_mode": {
+    "python": {
+      "total": 50,
+      "correct": 48,
+      "accuracy": 0.96
+    },
+    "knowledge": {
+      "total": 50,
+      "correct": 41,
+      "accuracy": 0.82
+    }
+  },
+  "by_category": {
+    "EdgeCase": {
+      "total": 15,
+      "correct": 14,
+      "accuracy": 0.93
+    },
+    "StringTrick": {
+      "total": 10,
+      "correct": 10,
+      "accuracy": 1.0
+    },
+    "Algorithm": {
+      "total": 15,
+      "correct": 15,
+      "accuracy": 1.0
+    },
+    "DataStructure": {
+      "total": 10,
+      "correct": 9,
+      "accuracy": 0.9
+    },
+    "Polars": {
+      "total": 15,
+      "correct": 13,
+      "accuracy": 0.87
+    },
+    "SQL": {
+      "total": 15,
+      "correct": 13,
+      "accuracy": 0.87
+    },
+    "Spark": {
+      "total": 10,
+      "correct": 8,
+      "accuracy": 0.8
+    },
+    "Snowflake": {
+      "total": 10,
+      "correct": 7,
+      "accuracy": 0.7
+    }
+  }
+}
