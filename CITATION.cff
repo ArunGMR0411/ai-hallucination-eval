@@ -1,0 +1,28 @@
+cff-version: 1.2.0
+message: "If you use this software or dataset, please cite it as below."
+title: "Empirical Evaluation of Hallucinations in Large Language Models: A Comparative Study of Code Generation and Technical Knowledge Tasks"
+type: software
+authors:
+  - family-names: Narayanan
+    given-names: Arun
+    email: arun.narayanan2@mail.dcu.ie
+    affiliation: "School of Computing, Dublin City University"
+    orcid: ""
+date-released: "2025-11-01"
+url: "https://github.com/ArunGMR0411/ai-hallucination-eval"
+license: MIT
+keywords:
+  - hallucination detection
+  - large language models
+  - code generation
+  - LLM evaluation
+  - Google Gemini
+  - Cohere
+abstract: >-
+  A dual-mode evaluation framework for measuring hallucination rates in
+  state-of-the-art Large Language Models. Compares Google Gemini 2.5 Flash
+  and Cohere Command R7B across 100 test cases spanning Python code
+  execution and specialized technical knowledge domains (Polars, SQL,
+  Spark, Snowflake). Results demonstrate a 25-percentage-point accuracy
+  gap (89% vs 64%) with hallucination rates correlating strongly with
+  domain specialization.
