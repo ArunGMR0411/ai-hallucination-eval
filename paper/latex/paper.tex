@@ -51,7 +51,7 @@
 % ABSTRACT
 % ============================================================
 \begin{abstract}
-Large Language Models (LLMs) are increasingly deployed in software development and technical workflows, yet their tendency to generate confident but incorrect outputs---hallucinations---remains a critical concern. This study presents a comprehensive empirical evaluation of hallucination rates in two state-of-the-art LLMs: Google Gemini~2.5 Flash and Cohere Command~R7B. We employ a dual-mode testing framework combining objective code execution testing (50~questions) with knowledge-based questions (50~questions) across eight technical domains. Crucially, we distinguish between \emph{hallucinations} (factually incorrect answers) and \emph{format violations} (correct answers embedded in extra text)---a distinction often conflated in prior work. Gemini achieved 89\% overall accuracy while Cohere achieved 65\%, a 24~percentage-point gap. Code execution tasks proved substantially easier (90\% average) than specialized technical knowledge tasks (63\% average). Performance degraded markedly for specialized domains, particularly Snowflake (40\% average) and Spark (55\% average). These findings reveal critical gaps in specialized technical knowledge with significant implications for software development and data engineering workflows.
+Large Language Models (LLMs) are increasingly deployed in software development and technical workflows, yet their tendency to generate confident but incorrect outputs (hallucinations) remains a critical concern. This study presents a comprehensive empirical evaluation of hallucination rates in two state-of-the-art LLMs: Google Gemini~2.5 Flash and Cohere Command~R7B. We employ a dual-mode testing framework combining objective code execution testing (50~questions) with knowledge-based questions (50~questions) across eight technical domains. We further distinguish between \emph{hallucinations} (factually incorrect answers), \emph{format violations} (correct answers embedded in extra text), and \emph{refusals} (model declines to answer). Gemini achieved 89\% overall accuracy while Cohere achieved 64\%, a 25~percentage-point gap. Code execution tasks proved substantially easier (90\% average) than specialized technical knowledge tasks (63\% average). Performance degraded markedly for specialized domains, particularly Snowflake (40\% average) and Spark (55\% average). These findings reveal critical gaps in specialized technical knowledge with significant implications for software development and data engineering workflows.
 \end{abstract}
 
 \begin{IEEEkeywords}
@@ -63,7 +63,7 @@ Large Language Models, Hallucinations, Code Generation, Technical Knowledge, Obj
 % ============================================================
 \section{Introduction}
 
-Large Language Models such as GPT-4~\cite{achiam2023gpt4}, Gemini, and Cohere are now routinely employed for tasks ranging from general writing to specialized domains including software development, data engineering, and database management. A well-documented limitation is their propensity to generate hallucinations---confident, plausible-sounding outputs that are factually incorrect or logically flawed~\cite{ji2023survey}. This presents serious risks in technical domains where incorrect code or misinformation can lead to security vulnerabilities, system failures, and data loss.
+Large Language Models such as GPT-4~\cite{achiam2023gpt4}, Gemini, and Cohere are now routinely employed for tasks ranging from general writing to specialized domains including software development, data engineering, and database management. A well-documented limitation is their propensity to generate hallucinations: confident, plausible-sounding outputs that are factually incorrect or logically flawed~\cite{ji2023survey}. This presents serious risks in technical domains where incorrect code or misinformation can lead to security vulnerabilities, system failures, and data loss.
 
 Most existing evaluations of LLM performance rely on subjective human judgment or multiple-choice assessments, both of which suffer from limitations. In contrast, code generation and technical knowledge retrieval offer opportunities for objective, reproducible evaluation. When an LLM generates Python code, that code can be executed in a controlled environment and compared against expected outputs with binary precision.
 
@@ -76,7 +76,7 @@ This research addresses three specific questions:
 
 We developed a comprehensive testing framework incorporating 100~questions spanning eight technical categories. The framework uses two evaluation modes: Python code execution via the Piston API sandbox for objective output verification, and direct string comparison for knowledge-based questions.
 
-A critical contribution of this work is the explicit distinction between \textbf{hallucinations} (factually incorrect or logically flawed outputs) and \textbf{format violations} (correct answers embedded in unnecessary explanations or preambles). Prior work frequently conflates these categories, leading to overestimation of hallucination rates when models provide correct information with verbose formatting.
+An additional contribution of this work is the explicit distinction between \textbf{hallucinations} (factually incorrect or logically flawed outputs), \textbf{format violations} (correct answers embedded in unnecessary explanations or preambles), and \textbf{refusals} (cases where the model declines to answer). Prior work frequently conflates these categories, leading to imprecise characterisation of LLM failure modes.
 
 % ============================================================
 % 2. METHODOLOGY
@@ -89,11 +89,12 @@ A critical contribution of this work is the explicit distinction between \textbf
 We prompt LLMs to generate complete Python code solving specific algorithmic and logical challenges. The generated code is transmitted to the Piston API (a cloud-based sandbox) where it is compiled and executed with a 5-second timeout. A response is marked correct only if: (a)~the code compiles without syntax errors, (b)~the code executes without runtime errors, and (c)~the output exactly matches the expected result character-for-character.
 
 \textbf{Mode~2: Knowledge-Based Questions (String Matching with Format Detection).}
-We prompt LLMs to answer technical questions with brief, precise answers. The answer is compared against ground truth using: (1)~exact matching, (2)~partial matching fallback, and (3)~format violation detection. We distinguish three response categories:
+We prompt LLMs to answer technical questions with brief, precise answers. The answer is compared against ground truth using: (1)~exact matching, (2)~partial matching fallback, and (3)~format violation detection. We distinguish four response categories:
 \begin{itemize}[leftmargin=*]
   \item \textbf{Correct}: Answer exactly matches expected output.
   \item \textbf{Format Violation}: Correct answer present but with extra text (e.g., ``The answer is DISTINCT'' instead of ``DISTINCT'').
   \item \textbf{Hallucination}: Factually incorrect or logically flawed answer.
+  \item \textbf{Refused}: Model declines to answer or returns an empty response.
 \end{itemize}
 
 System prompts explicitly instruct models to provide only answers without explanations, allowing us to quantify format compliance violations separately.
@@ -129,7 +130,7 @@ Both models were evaluated through official commercial APIs with identical promp
 
 \textit{Python Code Responses:} Syntax correctness, runtime correctness, output correctness, and timeout handling (5-second limit). Correct if and only if all criteria pass.
 
-\textit{Knowledge Question Responses:} Exact match $\rightarrow$ Correct~(1.0); partial match without explanation $\rightarrow$ Correct~(1.0); correct answer + explanation $\rightarrow$ Format Violation~(0.5); incorrect answer $\rightarrow$ Hallucination~(0.0). Format violations and hallucinations are tracked separately.
+\textit{Knowledge Question Responses:} Exact match $\rightarrow$ Correct; partial match without explanation $\rightarrow$ Correct; correct answer with appended explanation $\rightarrow$ Format Violation; incorrect answer $\rightarrow$ Hallucination; no answer or refusal $\rightarrow$ Refused. Format violations, hallucinations, and refusals are tracked separately.
 
 \subsection{Prompt Engineering}
 
@@ -149,7 +150,7 @@ All reported accuracy percentages include 95\% confidence intervals calculated u
 
 \subsection{Overall Performance}
 
-Gemini~2.5 Flash achieved \textbf{89\% overall accuracy} (89/100), while Cohere Command~R7B achieved \textbf{65\% overall accuracy} (65/100), a \textbf{24~percentage-point gap}. The 95\% confidence intervals do not overlap (Gemini:~[81--95\%]; Cohere:~[55--74\%]), confirming the gap is statistically significant.
+Gemini~2.5 Flash achieved \textbf{89\% overall accuracy} (89/100), while Cohere Command~R7B achieved \textbf{64\% overall accuracy} (64/100), a \textbf{25~percentage-point gap}. The 95\% confidence intervals do not overlap (Gemini:~[81--94\%]; Cohere:~[54--73\%]), confirming the gap is statistically significant.
 
 \begin{table}[!t]
 \caption{Overall Performance Summary}
@@ -159,15 +160,16 @@ Gemini~2.5 Flash achieved \textbf{89\% overall accuracy} (89/100), while Cohere 
 \toprule
 \textbf{Metric} & \textbf{Gemini} & \textbf{Cohere} & \textbf{$\Delta$} \\
 \midrule
-Overall Accuracy       & 89\% & 65\% & +24\,pp \\
-95\% CI                & [81--95\%] & [55--74\%] & --- \\
-Correct Responses      & 89  & 65  & +24 \\
-Format Violations      & 6   & 19  & $-$13 \\
-Hallucinations         & 5   & 16  & $-$11 \\
+Overall Accuracy       & 89\% & 64\% & +25\,pp \\
+95\% CI                & [81--94\%] & [54--73\%] & -- \\
+Correct Responses      & 89  & 64  & +25 \\
+Format Violations      & 1   & 6   & $-$5 \\
+Hallucinations         & 9   & 28  & $-$19 \\
+Refused                & 1   & 2   & $-$1 \\
 \bottomrule
 \end{tabular}
 \vspace{2pt}
-\footnotesize Format violations and hallucinations tracked separately. Cohere's higher format violation rate (19\% vs.\ 6\%) accounts for much of the gap.
+\footnotesize All four response categories tracked separately. Cohere's hallucination rate (28\%) is substantially higher than Gemini's (9\%).
 \end{table}
 
 \subsection{Performance by Mode}
@@ -183,16 +185,16 @@ Performance diverges sharply between code execution and knowledge tasks (Table~\
 \textbf{Mode} & \textbf{Gemini} & \textbf{Cohere} & \textbf{Avg} \\
 \midrule
 Python Code    & 96\% (48/50) & 84\% (42/50) & 90\% \\
-Knowledge      & 82\% (41/50) & 46\% (23/50) & 64\% \\
+Knowledge      & 82\% (41/50) & 44\% (22/50) & 63\% \\
 \midrule
-\textbf{Overall} & \textbf{89\%} & \textbf{65\%} & \textbf{77\%} \\
+\textbf{Overall} & \textbf{89\%} & \textbf{64\%} & \textbf{77\%} \\
 \bottomrule
 \end{tabular}
 \vspace{2pt}
-\footnotesize The 26\,pp gap between Python (90\%) and Knowledge (64\%) average accuracy indicates that objective, syntax-constrained tasks are significantly easier for LLMs.
+\footnotesize The 27\,pp gap between Python (90\%) and Knowledge (63\%) average accuracy indicates that objective, syntax-constrained tasks are significantly easier for LLMs.
 \end{table}
 
-The 26~percentage-point difference between Python (90\% average) and Knowledge (64\% average) demonstrates that objective, rule-based tasks with clear syntax constraints are significantly easier for LLMs than open-ended knowledge retrieval. Format violations are more prevalent in knowledge tasks (Cohere: 28\% in knowledge vs.\ 10\% in code).
+The 27~percentage-point difference between Python (90\% average) and Knowledge (63\% average) demonstrates that objective, rule-based tasks with clear syntax constraints are significantly easier for LLMs than open-ended knowledge retrieval.
 
 \subsection{Performance by Category}
 
@@ -209,7 +211,7 @@ Tables~\ref{tab:python} and~\ref{tab:knowledge} present category-level results w
 Edge Case (15)      & 93\% & 80\% & 87\% & +13\,pp \\
 String Trick (10)   & 100\% & 90\% & 95\% & +10\,pp \\
 Algorithm (15)      & 100\% & 87\% & 93\% & +13\,pp \\
-Data Structure (10) & 90\% & 78\% & 84\% & +12\,pp \\
+Data Structure (10) & 90\% & 80\% & 85\% & +10\,pp \\
 \midrule
 \textbf{Average}    & \textbf{96\%} & \textbf{84\%} & \textbf{90\%} & \textbf{+12\,pp} \\
 \bottomrule
@@ -231,7 +233,7 @@ SQL (15)        & 87\% & 80\% & 83\% & +7\,pp  & ns \\
 Spark (10)      & 80\% & 30\% & 55\% & +50\,pp & ** \\
 Snowflake (10)  & 70\% & 10\% & 40\% & +60\,pp & *** \\
 \midrule
-\textbf{Average} & \textbf{82\%} & \textbf{46\%} & \textbf{64\%} & \textbf{+36\,pp} & \\
+\textbf{Average} & \textbf{82\%} & \textbf{44\%} & \textbf{63\%} & \textbf{+38\,pp} & \\
 \bottomrule
 \end{tabular}
 \vspace{2pt}
@@ -240,23 +242,21 @@ Snowflake (10)  & 70\% & 10\% & 40\% & +60\,pp & *** \\
 
 The large gaps in specialized domains (Snowflake: 60\,pp, Spark: 50\,pp) are statistically robust, while differences in fundamental domains (SQL: 7\,pp) are not significant.
 
-\subsection{Format Violations vs.\ Hallucinations}
+\subsection{Format Violations and Refusals}
 
-Approximately 8--15\% of responses classified as failures are \emph{format violations} (correct answer with extra text) rather than hallucinations. Three illustrative examples:
+A small but notable proportion of responses were classified as \emph{format violations} (correct answer with extra text) rather than hallucinations. Gemini produced 1 format violation (1\%) while Cohere produced 6 (6\%). Additionally, Gemini refused 1~question (1\%) and Cohere refused 2 (2\%). Two illustrative format violation examples:
 
-\textbf{Example~1} (Knowledge). Question: ``What SQL keyword retrieves unique values?'' Expected: \texttt{DISTINCT}. Cohere: ``SELECT DISTINCT to retrieve unique values from a column.'' Classification: Format Violation.
+\textbf{Example~1} (Knowledge). Question: ``What SQL keyword retrieves unique values?'' Expected: \texttt{DISTINCT}. Cohere: ``SELECT DISTINCT to retrieve unique values from a column.'' Classification: Format Violation (correct answer embedded in explanation).
 
-\textbf{Example~2} (Knowledge). Question: ``What Polars method scans a CSV file lazily?'' Expected: \texttt{scan\_csv}. Cohere: ``Polars offers the scan\_csv method for lazy loading of CSV files.'' Classification: Format Violation.
+\textbf{Example~2} (Knowledge). Question: ``What Polars method scans a CSV file lazily?'' Expected: \texttt{scan\_csv}. Cohere: ``Polars offers the scan\_csv method for lazy loading of CSV files.'' Classification: Format Violation (correct answer present but with extra context).
 
-\textbf{Example~3} (Knowledge). Question: ``What SQL function returns the maximum value?'' Expected: \texttt{MAX}. Cohere: ``The MAX function returns the maximum value.'' Classification: Format Violation.
-
-After reclassification: Gemini shows 6\% format violations and 5\% hallucinations; Cohere shows 19\% format violations (predominantly in knowledge tasks) and 16\% hallucinations.
+Although format violations represent a small fraction of total errors (1\% for Gemini, 6\% for Cohere), the distinction matters: format violations indicate that knowledge is present but instruction compliance is lacking, whereas hallucinations reflect genuinely incorrect information.
 
 \subsection{Failure Mode Analysis}
 
-\textbf{Gemini's failures} (11~total: 6~format violations, 5~hallucinations): Hallucinations include incorrect identity comparisons, wrong modulo results, and confused function names (\texttt{filter} vs.\ \texttt{select} in Polars).
+\textbf{Gemini's failures} (11~total: 1~format violation, 9~hallucinations, 1~refused): Hallucinations include incorrect identity comparisons, wrong modulo results, and confused function names (\texttt{filter} vs.\ \texttt{select} in Polars). The single format violation involved a knowledge answer wrapped in a brief explanation. The refused response was a question where the model indicated insufficient context.
 
-\textbf{Cohere's failures} (35~total: 19~format violations, 16~hallucinations): Hallucinations include plausible but incorrect code, confused function names in Spark/Snowflake, and incorrect terminology. Format violations are predominantly in knowledge questions where correct answers are wrapped in explanations.
+\textbf{Cohere's failures} (36~total: 6~format violations, 28~hallucinations, 2~refused): Hallucinations include plausible but incorrect code, confused function names in Spark and Snowflake, and incorrect terminology. Format violations were concentrated in knowledge questions where correct answers were wrapped in explanations. The 28~hallucinations represent the primary failure mode, with Snowflake (9~errors) and Spark (7~errors) contributing the most.
 
 % ============================================================
 % 4. DISCUSSION
@@ -265,23 +265,27 @@ After reclassification: Gemini shows 6\% format violations and 5\% hallucination
 
 \subsection{Why Knowledge Tasks Are Harder}
 
-Performance on knowledge tasks (64\% average) lags code execution (90\% average) by 26~percentage points. Four factors contribute:
+Performance on knowledge tasks (63\% average) lags code execution (90\% average) by 27~percentage points. Four factors contribute:
 
-\textbf{Domain Specialization \& Training Data.} Polars (released~$\sim$2020) and modern Snowflake features (2023--2024) post-date most LLM training cutoffs. Knowledge questions were intentionally selected from modern, specialized domains where models are expected to have gaps.
+\textbf{Domain Specialization and Training Data.} Polars (released~$\sim$2020) and modern Snowflake features (2023--2024) post-date most LLM training cutoffs. Knowledge questions were intentionally selected from modern, specialized domains where models are expected to have gaps.
 
-\textbf{Terminology Precision.} Knowledge answers require exact function or keyword names. LLMs frequently hallucinate plausible alternatives---e.g., \texttt{read\_csv} instead of \texttt{scan\_csv} (Polars), \texttt{WHERE} instead of \texttt{QUALIFY} (Snowflake). Each alternative is syntactically plausible but incorrect.
+\textbf{Terminology Precision.} Knowledge answers require exact function or keyword names. LLMs frequently hallucinate plausible alternatives, such as \texttt{read\_csv} instead of \texttt{scan\_csv} (Polars), or \texttt{WHERE} instead of \texttt{QUALIFY} (Snowflake). Each alternative is syntactically plausible but incorrect.
 
-\textbf{Absence of Syntax Validation.} Code execution has a built-in validation mechanism: syntax and runtime errors are caught immediately. Knowledge questions have no such compilation phase---incorrect terminology passes silently.
+\textbf{Absence of Syntax Validation.} Code execution has a built-in validation mechanism: syntax and runtime errors are caught immediately. Knowledge questions have no such compilation phase, so incorrect terminology passes silently.
 
 \textbf{Disambiguation Requirements.} Knowledge questions reference functions within large multi-function libraries (Polars has 300+ methods). The LLM must disambiguate among semantically similar options, whereas code questions typically have a unique correct solution.
 
 \subsection{Specialized Domains: Snowflake at 40\%}
 
-Snowflake achieved the worst category performance (Gemini~70\%, Cohere~10\%, average~40\%). Root causes include: (1)~enterprise tool specificity---Snowflake is closed-source with documentation underrepresented in public training data; (2)~recent feature additions (\texttt{QUALIFY}, \texttt{MAX\_BY}) introduced in 2023--2024, potentially after training cutoffs; (3)~unique syntax patterns diverging from standard SQL; and (4)~Cohere's smaller model capacity (7B~parameters) limiting knowledge-intensive recall.
+Snowflake achieved the worst category performance (Gemini~70\%, Cohere~10\%, average~40\%). Root causes include: (1)~enterprise tool specificity, as Snowflake is closed-source with documentation underrepresented in public training data; (2)~recent feature additions (\texttt{QUALIFY}, \texttt{MAX\_BY}) introduced in 2023--2024, potentially after training cutoffs; (3)~unique syntax patterns diverging from standard SQL; and (4)~Cohere's smaller model capacity (7B~parameters) limiting knowledge-intensive recall.
 
-\subsection{Cohere's Format Violation Tendency}
+\subsection{Hallucination as the Dominant Failure Mode}
 
-Cohere demonstrated a 19\% format violation rate compared to Gemini's 6\%. Despite explicit instructions to provide only answers, Cohere frequently appended explanations. This suggests Cohere's training emphasizes helpful, explanatory responses, making it less effective at suppressing verbosity. Importantly, format violations indicate that \emph{knowledge is present} but instruction compliance is lacking---a fundamentally different failure mode from hallucinations, and one potentially recoverable through output post-processing.
+The data reveals that hallucinations, not format violations, are the dominant failure mode for both models. Gemini produced 9~hallucinations (9\%) compared to only 1~format violation (1\%). Cohere produced 28~hallucinations (28\%) compared to 6~format violations (6\%). This indicates that when models fail, they overwhelmingly produce factually incorrect answers rather than correct answers in non-compliant formatting.
+
+Cohere's hallucination rate is more than three times Gemini's (28\% vs.\ 9\%), with the disparity concentrated in knowledge tasks. In the Snowflake category, Cohere hallucinated on 9 out of 10~questions, suggesting near-complete absence of domain knowledge. Gemini's hallucinations were spread more evenly across categories, suggesting broader but shallower knowledge gaps.
+
+The small number of format violations (7 total across both models) suggests that modern LLMs generally comply with instruction formatting when they possess the relevant knowledge. The bottleneck is knowledge availability, not instruction following.
 
 % ============================================================
 % 5. THREATS TO VALIDITY
@@ -294,7 +298,7 @@ Our 100~test questions focus on structured, objectively-scored tasks. Open-ended
 
 \subsection{Internal Validity}
 
-We use a single prompt formulation per category; response patterns might change with different prompts. All generations used default temperature settings. We evaluate zero-shot performance only---few-shot examples might improve results. The Piston API sandbox's 5-second timeout may not reflect all production scenarios.
+We use a single prompt formulation per category; response patterns might change with different prompts. All generations used default temperature settings. We evaluate zero-shot performance only; few-shot examples might improve results. The Piston API sandbox's 5-second timeout may not reflect all production scenarios.
 
 \subsection{External Validity}
 
@@ -302,7 +306,7 @@ Only two models were evaluated. Results do not generalize to GPT-4, Claude~3, Ll
 
 \subsection{Conclusion Validity}
 
-Binary scoring misses partial correctness. Category sample sizes are small ($n=10$--$15$), yielding wide confidence intervals. We applied Bonferroni correction to control false positives across 8~category comparisons. No inter-rater reliability study was conducted---our exact-match criterion is stricter than typical human judgment.
+Binary scoring misses partial correctness. Category sample sizes are small ($n=10$--$15$), yielding wide confidence intervals. We applied Bonferroni correction to control false positives across 8~category comparisons. No inter-rater reliability study was conducted; our exact-match criterion is stricter than typical human judgment.
 
 % ============================================================
 % 6. RELATED WORK
@@ -311,15 +315,15 @@ Binary scoring misses partial correctness. Category sample sizes are small ($n=1
 
 \subsection{Hallucination Definitions}
 
-Ji et~al.~\cite{ji2023survey} provide a comprehensive survey distinguishing extrinsic hallucinations (contradicting external knowledge) from intrinsic hallucinations (self-contradictory). Our work focuses on extrinsic hallucinations. Maynez et~al.~\cite{maynez2020faithfulness} note that ``correct facts delivered in verbose formatting'' are fundamentally different from factual errors---a distinction we operationalize as format violations vs.\ hallucinations.
+Ji et~al.~\cite{ji2023survey} provide a comprehensive survey distinguishing extrinsic hallucinations (contradicting external knowledge) from intrinsic hallucinations (self-contradictory). Our work focuses on extrinsic hallucinations. Maynez et~al.~\cite{maynez2020faithfulness} study faithfulness in abstractive summarization, establishing that factual correctness and output formatting are distinct dimensions of generation quality. We build on this insight by separately tracking format violations, hallucinations, and refusals in our evaluation.
 
 \subsection{Code Evaluation Benchmarks}
 
-Chen et~al.~\cite{chen2021evaluating} present HumanEval, establishing execution-based code evaluation. Liu et~al.~\cite{liu2023humaneval} extend this with HumanEval+, adding robustness through diverse test cases. Our Python evaluation follows the HumanEval paradigm but focuses on edge cases, evaluates commercial LLMs, and distinguishes format violations from correctness failures.
+Chen et~al.~\cite{chen2021evaluating} present HumanEval, establishing execution-based code evaluation. Liu et~al.~\cite{liu2023humaneval} extend this with HumanEval+, adding robustness through diverse test cases. Our Python evaluation follows the HumanEval paradigm but focuses on edge cases and evaluates commercial LLMs.
 
-\subsection{Knowledge \& Truthfulness Benchmarks}
+\subsection{Knowledge and Truthfulness Benchmarks}
 
-Hendrycks et~al.~\cite{hendrycks2020measuring} introduce MMLU, testing knowledge across 57~domains via multiple-choice questions. Lin et~al.~\cite{lin2022truthfulqa} present TruthfulQA, evaluating factual alignment with open-ended answers. Min et~al.~\cite{min2023factscore} introduce FactScore for fine-grained evaluation of factual precision. Our distinction between format violations and hallucinations echoes FactScore's attention to granular evaluation.
+Hendrycks et~al.~\cite{hendrycks2020measuring} introduce MMLU, testing knowledge across 57~domains via multiple-choice questions. Lin et~al.~\cite{lin2022truthfulqa} present TruthfulQA, evaluating factual alignment with open-ended answers. Min et~al.~\cite{min2023factscore} introduce FactScore for fine-grained evaluation of factual precision. Our work complements these benchmarks by evaluating specialized technical domains (Polars, Snowflake, Spark) that are absent from existing benchmarks.
 
 \subsection{Domain-Specific LLM Evaluation}
 
@@ -327,12 +331,12 @@ Rozi\`{e}re et~al.~\cite{roziere2024code} present Code~Llama, evaluated on progr
 
 \subsection{Positioning of This Work}
 
-This research contributes: (1)~explicit format violation detection, separating verbose correctness from hallucinations; (2)~specialized technical domain evaluation extending beyond foundational domains; (3)~comparative binary evaluation demonstrating that code tasks are substantially easier than knowledge retrieval; and (4)~clear, reproducible methodology compatible with HumanEval~\cite{chen2021evaluating} and TruthfulQA~\cite{lin2022truthfulqa}.
+This research contributes: (1)~a four-category response taxonomy (correct, format violation, hallucination, refused) providing granular failure analysis; (2)~specialized technical domain evaluation extending beyond foundational domains; (3)~comparative binary evaluation demonstrating that code tasks are substantially easier than knowledge retrieval; and (4)~clear, reproducible methodology compatible with HumanEval~\cite{chen2021evaluating} and TruthfulQA~\cite{lin2022truthfulqa}.
 
 % ============================================================
 % 7. LIMITATIONS & FUTURE WORK
 % ============================================================
-\section{Limitations \& Future Work}
+\section{Limitations and Future Work}
 
 \subsection{Limitations}
 
@@ -358,16 +362,16 @@ Key directions include: (1)~expanded model evaluation across GPT-4, Claude~3, Ll
 This empirical evaluation reveals clear hierarchies in LLM performance across technical domains.
 
 \textbf{Key Findings:}
-(1)~Gemini~2.5 Flash substantially outperforms Cohere Command~R7B (89\% vs.\ 65\%), with the largest gaps in specialized domains (Snowflake: 60\,pp gap).
-(2)~Code execution tasks are substantially easier than knowledge retrieval (90\% vs.\ 64\% average), suggesting that objective constraints and syntax validation strongly improve LLM performance.
-(3)~Format violations account for 8--15\% of failures---these are correct answers with verbose formatting, distinct from true hallucinations.
+(1)~Gemini~2.5 Flash substantially outperforms Cohere Command~R7B (89\% vs.\ 64\%), with the largest gaps in specialized domains (Snowflake: 60\,pp gap).
+(2)~Code execution tasks are substantially easier than knowledge retrieval (90\% vs.\ 63\% average), suggesting that objective constraints and syntax validation strongly improve LLM performance.
+(3)~Hallucinations are the dominant failure mode (9\% for Gemini, 28\% for Cohere), while format violations are comparatively rare (1\% and 6\% respectively).
 (4)~Specialized tools (Snowflake, Polars) expose significant gaps, with performance degrading to 40\% in the worst case.
 
 \textbf{Practical Implications:}
-For critical applications (production code, database queries), human review remains essential---neither model achieves near-perfect accuracy across all domains. Format violations suggest that output post-processing might recover some responses; true hallucinations are not recoverable. Practitioners should not assume LLMs have reliable knowledge of modern specialized tools without domain-specific validation.
+For critical applications (production code, database queries), human review remains essential, as neither model achieves near-perfect accuracy across all domains. The overwhelming dominance of hallucinations over format violations indicates that LLM failures are primarily knowledge gaps, not formatting issues. Practitioners should not assume LLMs have reliable knowledge of modern specialized tools without domain-specific validation.
 
 \textbf{Methodological Contributions:}
-This work demonstrates the value of objective, executable evaluation methodologies with binary, reproducible scoring. The explicit distinction between format violations and hallucinations provides a more nuanced understanding of LLM failure modes. All code and data are publicly available.\footnote{\url{https://github.com/ArunGMR0411/ai-hallucination-eval}}
+This work demonstrates the value of objective, executable evaluation methodologies with binary, reproducible scoring. The four-category response taxonomy (correct, format violation, hallucination, refused) provides a more nuanced understanding of LLM failure modes than simple correct/incorrect classifications. All code and data are publicly available.\footnote{\url{https://github.com/ArunGMR0411/ai-hallucination-eval}}
 
 \balance
 \bibliographystyle{IEEEtran}
