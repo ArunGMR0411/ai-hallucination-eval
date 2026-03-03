@@ -1,0 +1,25 @@
+{
+  "name": "ai-hallucination-eval",
+  "version": "1.0.0",
+  "description": "Interactive tool for evaluating LLM hallucinations in Python code generation and domain knowledge",
+  "main": "docs/app.js",
+  "scripts": {
+    "dev": "http-server docs -p 8080 -c-1",
+    "serve": "http-server docs -p 3000"
+  },
+  "keywords": [
+    "LLM",
+    "hallucination",
+    "evaluation",
+    "Gemini",
+    "Cohere",
+    "AI",
+    "research"
+  ],
+  "author": "Arun Narayanan <arun.narayanan2@mail.dcu.ie>",
+  "license": "MIT",
+  "devDependencies": {
+    "http-server": "^14.1.1"
+  },
+  "dependencies": {}
+}
