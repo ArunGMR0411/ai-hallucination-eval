@@ -204,8 +204,13 @@ body {
 
 .grid-3 {
   display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 20px;
+  align-items: start;
+}
+
+.grid-3 > * {
+  min-width: 0;
 }
 
 /* ------------------------------------------------------------------ */
@@ -325,6 +330,7 @@ body {
   white-space: pre;
   margin-bottom: 14px;
   tab-size: 4;
+  max-width: 100%;
 }
 
 /* ------------------------------------------------------------------ */
@@ -352,16 +358,27 @@ body {
 
 .exec-result .detail-row {
   display: flex;
+  align-items: flex-start;
   gap: 8px;
   font-size: 0.84rem;
   color: var(--color-text-muted);
   margin-top: 4px;
+  min-width: 0;
 }
 
 .exec-result .detail-row .label {
   font-weight: 600;
   min-width: 80px;
+  flex-shrink: 0;
   color: var(--color-text);
+}
+
+.exec-result .detail-row span:last-child,
+.ground-truth .value,
+.question-box .text {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 /* ------------------------------------------------------------------ */
