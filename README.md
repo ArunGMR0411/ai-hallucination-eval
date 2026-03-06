@@ -6,6 +6,12 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![GitHub Pages](https://img.shields.io/badge/demo-live-brightgreen)](https://ArunGMR0411.github.io/ai-hallucination-eval/)
+[![Grade](https://img.shields.io/badge/Grade-95%25-gold?style=for-the-badge&labelColor=1e3a5f)](report/report.pdf)
+
+---
+
+> ### **Result: 95%**
+> This project received a grade of **95 / 100** for the MSc Foundations of AI module at Dublin City University.
 
 ---
 
@@ -31,7 +37,11 @@ A dual-mode evaluation framework for measuring hallucination rates in state-of-t
 
 Users provide their own API keys (Gemini + Cohere) and can test any of the 100 built-in questions or create custom ones.
 
-> **Note:** The Piston public API (used for Python code execution) was shut down in February 2026. The Knowledge-Based Questions mode remains fully functional. Python code execution requires a self-hosted Piston instance or alternative sandbox.
+> [!IMPORTANT]
+> **The Piston public API was shut down in February 2026.**
+> **Mode 2 (Knowledge-Based Questions) works perfectly** — no changes needed.
+> **Mode 1 (Python Code Execution) will fail** unless you self-host Piston or use an alternative sandbox.
+> See the [Piston API Alternatives](#piston-api-alternatives) section below for step-by-step instructions.
 
 ## Architecture
 
@@ -59,7 +69,9 @@ Users provide their own API keys (Gemini + Cohere) and can test any of the 100 b
 
 ### Mode 1: Python Code Execution (50 questions)
 
-LLMs generate Python code which is transmitted to the Piston API sandbox for compilation and execution. A response is marked correct only if the code compiles, executes without errors, and the output exactly matches the expected result.
+LLMs generate Python code which is transmitted to a [Piston API](https://github.com/engineer-man/piston) sandbox for compilation and execution. A response is marked correct only if the code compiles, executes without errors, and the output exactly matches the expected result.
+
+> **Status (March 2026):** The public Piston endpoint (`emkc.org`) is no longer available. You must self-host Piston or swap in another sandbox to use this mode. See [Piston API Alternatives](#piston-api-alternatives).
 
 **Categories:** EdgeCase (15), StringTrick (10), Algorithm (15), DataStructure (10)
 
@@ -92,26 +104,86 @@ The evaluation distinguishes between four outcome types:
 
 ```bash
 git clone https://github.com/ArunGMR0411/ai-hallucination-eval.git
-cd ai-hallucination-eval/docs
-# Open index.html in your browser, or serve it:
+cd ai-hallucination-eval
+
+# Using npm (requires Node.js):
+npm install
+npm run dev
+# Visit http://localhost:8080
+
+# Or serve directly:
+cd src
 python3 -m http.server 8000
 # Visit http://localhost:8000
 ```
 
 ### Deploy
 
-The project is configured for GitHub Pages deployment from the `docs/` directory. Push to `main` and enable GitHub Pages in repository settings.
+The project is configured for GitHub Pages deployment from the `src/` directory via GitHub Actions. Push to `main` to trigger automatic deployment.
+
+### Piston API Alternatives
+
+The public Piston API at `https://emkc.org/api/v2/piston/execute` was **discontinued in February 2026**. If you want to use **Mode 1 (Python Code Execution)**, you have two options:
+
+#### Option A: Self-Host Piston (Recommended)
+
+Piston is open-source and can be run locally with Docker.
+
+```bash
+# 1. Clone and start Piston
+git clone https://github.com/engineer-man/piston.git
+cd piston
+docker-compose up -d
+
+# 2. Install the Python 3.10 runtime inside Piston
+docker exec -it piston_api /bin/bash
+piston install python 3.10.0
+exit
+
+# 3. Verify it is running
+curl -X POST http://localhost:2000/api/v2/execute \
+  -H "Content-Type: application/json" \
+  -d '{"language": "python", "version": "3.10.0", "files": [{"content": "print(42)"}]}'
+# Should return: {"run": {"stdout": "42\n", ...}}
+```
+
+Then update the `PISTON_URL` constant in [`src/app.js`](src/app.js) (line 20):
+
+```javascript
+// Before (defunct)
+const PISTON_URL = "https://emkc.org/api/v2/piston/execute";
+
+// After (local instance)
+const PISTON_URL = "http://localhost:2000/api/v2/execute";
+```
+
+#### Option B: Use an Alternative Sandbox API
+
+If you prefer not to run Docker, you can substitute any code execution API that accepts Python source and returns stdout. Popular alternatives:
+
+| Service | URL | Notes |
+|---------|-----|-------|
+| [Judge0](https://judge0.com/) | `https://judge0-ce.p.rapidapi.com` | Free tier via RapidAPI; requires API key |
+| [Glot.io](https://glot.io/) | `https://glot.io/api/run/python/latest` | Free, no key required, rate-limited |
+| Self-hosted Judge0 | `http://localhost:2358` | Open-source, Docker-based |
+
+Using a different API will require modifying the `executeCode()` function in [`src/app.js`](src/app.js) to match that API's request/response format. The key fields to map are:
+- **Request:** language, version, source code
+- **Response:** stdout, stderr, exit code
+
+#### What Works Without Piston
+
+**Mode 2 (Knowledge-Based Questions) is completely unaffected** — it uses direct string comparison and requires no code execution backend. You can use all 50 knowledge questions (Polars, SQL, Spark, Snowflake) with zero additional setup.
 
 ## Project Structure
 
 ```
 ai-hallucination-eval/
-├── docs/                    # GitHub Pages root
+├── src/                     # Application source (GitHub Pages root)
 │   ├── index.html           # Application entry point
-│   ├── style.css            # Professional stylesheet
-│   ├── app.js               # Application logic
-│   ├── questions.js         # 100-question evaluation dataset
-│   └── screenshots/         # Application screenshots
+│   ├── style.css            # Stylesheet (CSS custom properties)
+│   ├── app.js               # Application logic (async/await, ES2020+)
+│   └── questions.js         # 100-question evaluation dataset
 ├── report/                  # Assignment report
 │   ├── report.tex           # LaTeX source
 │   └── references.bib       # Bibliography
