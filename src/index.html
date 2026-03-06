@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Hallucination Evaluation — Gemini vs Cohere</title>
+  <meta name="description" content="Empirical evaluation of hallucination rates in LLMs: comparing Google Gemini and Cohere across code generation and technical knowledge tasks.">
+  <meta name="author" content="Arun Narayanan">
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="container">
+
+  <!-- Header -->
+  <header class="site-header">
+    <h1>AI Hallucination Evaluation</h1>
+    <p class="subtitle">Comparing LLM accuracy: Google Gemini 2.5 Flash vs Cohere Command R7B</p>
+    <p class="meta">
+      Arun Narayanan &middot; School of Computing, Dublin City University &middot;
+      <a href="https://github.com/ArunGMR0411/ai-hallucination-eval" target="_blank" rel="noopener">GitHub</a>
+    </p>
+  </header>
+
+  <!-- Mode Tabs -->
+  <nav class="mode-tabs" role="tablist" aria-label="Evaluation mode">
+    <button class="mode-tab active" id="tab-python" role="tab"
+            aria-selected="true" data-mode="python">Python Code Execution</button>
+    <button class="mode-tab" id="tab-knowledge" role="tab"
+            aria-selected="false" data-mode="knowledge">Knowledge-Based Questions</button>
+  </nav>
+
+  <main>
+
+    <!-- Info Banner -->
+    <div class="info-banner" id="info-banner" role="status">
+      <h3 id="banner-title">Mode: Python Code Execution</h3>
+      <p id="banner-desc">
+        AI models generate Python code to solve each challenge.
+        Code is executed in a secure sandbox (Piston API) and the output is
+        compared against the expected result. 50 questions across edge cases,
+        string operations, algorithms, and data structures.
+      </p>
+    </div>
+
+    <!-- Configuration + Question Selection -->
+    <div class="grid-2">
+
+      <!-- API Keys -->
+      <div class="card">
+        <h2 class="card-title">API Configuration</h2>
+
+        <label class="form-label" for="gemini-key">Google Gemini API Key</label>
+        <input class="form-input" type="password" id="gemini-key"
+               placeholder="Enter your Gemini API key" autocomplete="off">
+        <span class="form-hint">Obtain from <a href="https://aistudio.google.com" target="_blank" rel="noopener">aistudio.google.com</a></span>
+
+        <label class="form-label" for="cohere-key">Cohere API Key</label>
+        <input class="form-input" type="password" id="cohere-key"
+               placeholder="Enter your Cohere API key" autocomplete="off">
+        <span class="form-hint">Obtain from <a href="https://dashboard.cohere.com" target="_blank" rel="noopener">dashboard.cohere.com</a></span>
+
+        <div class="info-banner mb-0" id="mode-note">
+          <p id="mode-note-text">
+            <strong>Python mode:</strong> Code execution powered by the
+            <a href="https://github.com/engineer-man/piston" target="_blank" rel="noopener">Piston API</a>
+            (free, sandboxed environment).
+          </p>
+        </div>
+      </div>
+
+      <!-- Question Picker -->
+      <div class="card">
+        <h2 class="card-title" id="picker-title">Select Challenge</h2>
+
+        <label class="form-label" for="question-select" id="select-label">Question (50 total)</label>
+        <select class="form-select" id="question-select" aria-labelledby="select-label">
+          <option value="">-- Select a question --</option>
+        </select>
+        <span class="form-hint" id="category-hint">Categories: EdgeCase, StringTrick, Algorithm, DataStructure</span>
+
+        <button class="btn btn-primary" id="run-btn" type="button">Run Test</button>
+
+        <!-- Custom Question -->
+        <div class="custom-section">
+          <h3>Custom Question</h3>
+          <label class="form-label" for="custom-question">Your question</label>
+          <textarea class="form-textarea" id="custom-question"
+                    placeholder="e.g. Write Python code that prints the first 5 prime numbers"></textarea>
+          <label class="form-label" for="custom-output">Expected output / answer</label>
+          <input class="form-input" type="text" id="custom-output"
+                 placeholder="e.g. [2, 3, 5, 7, 11]">
+          <button class="btn btn-primary" id="run-custom-btn" type="button">Run Custom Test</button>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Results Area -->
+    <div id="results-area" class="results-area">
+      <div class="grid-3">
+
+        <!-- Gemini Result -->
+        <div class="card">
+          <h2 class="card-title" id="gemini-title">Gemini — Generated Code</h2>
+          <div class="code-display" id="gemini-code" role="log">Waiting for input&hellip;</div>
+
+          <div class="exec-result" id="gemini-execution" role="status">
+            Execution result will appear here.
+          </div>
+
+          <fieldset class="scoring-group">
+            <legend class="label">Manual Score Override</legend>
+            <div class="score-options" id="gemini-score-options">
+              <button class="score-btn" type="button" data-api="gemini" data-score="correct">
+                <input type="radio" name="gemini-score" value="correct" tabindex="-1" aria-hidden="true"> Correct
+              </button>
+              <button class="score-btn" type="button" data-api="gemini" data-score="format_violation">
+                <input type="radio" name="gemini-score" value="format_violation" tabindex="-1" aria-hidden="true"> Format Violation
+              </button>
+              <button class="score-btn" type="button" data-api="gemini" data-score="hallucination">
+                <input type="radio" name="gemini-score" value="hallucination" tabindex="-1" aria-hidden="true"> Hallucination
+              </button>
+              <button class="score-btn" type="button" data-api="gemini" data-score="refused">
+                <input type="radio" name="gemini-score" value="refused" tabindex="-1" aria-hidden="true"> Refused
+              </button>
+            </div>
+          </fieldset>
+        </div>
+
+        <!-- Cohere Result -->
+        <div class="card">
+          <h2 class="card-title" id="cohere-title">Cohere — Generated Code</h2>
+          <div class="code-display" id="cohere-code" role="log">Waiting for input&hellip;</div>
+
+          <div class="exec-result" id="cohere-execution" role="status">
+            Execution result will appear here.
+          </div>
+
+          <fieldset class="scoring-group">
+            <legend class="label">Manual Score Override</legend>
+            <div class="score-options" id="cohere-score-options">
+              <button class="score-btn" type="button" data-api="cohere" data-score="correct">
+                <input type="radio" name="cohere-score" value="correct" tabindex="-1" aria-hidden="true"> Correct
+              </button>
+              <button class="score-btn" type="button" data-api="cohere" data-score="format_violation">
+                <input type="radio" name="cohere-score" value="format_violation" tabindex="-1" aria-hidden="true"> Format Violation
+              </button>
+              <button class="score-btn" type="button" data-api="cohere" data-score="hallucination">
+                <input type="radio" name="cohere-score" value="hallucination" tabindex="-1" aria-hidden="true"> Hallucination
+              </button>
+              <button class="score-btn" type="button" data-api="cohere" data-score="refused">
+                <input type="radio" name="cohere-score" value="refused" tabindex="-1" aria-hidden="true"> Refused
+              </button>
+            </div>
+          </fieldset>
+        </div>
+
+        <!-- Challenge Details -->
+        <div class="card">
+          <h2 class="card-title">Challenge Details</h2>
+
+          <div class="question-box">
+            <div class="label" id="question-label">Challenge</div>
+            <p class="text" id="question-display"></p>
+          </div>
+
+          <div class="ground-truth">
+            <div class="label" id="expected-label">Expected Output</div>
+            <div class="value" id="expected-output"></div>
+          </div>
+
+          <button class="btn btn-success" id="submit-scores-btn" type="button">Submit Scores to Leaderboard</button>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Statistics & Leaderboard -->
+    <section class="stats-grid" id="stats-area" aria-label="Evaluation statistics">
+
+      <div class="stat-card" id="gemini-stats-card">
+        <h3>Gemini</h3>
+        <div id="gemini-stats">
+          <div class="stat-row"><span class="stat-label">Correct</span><span class="stat-value">0</span></div>
+          <div class="stat-row"><span class="stat-label">Hallucinations</span><span class="stat-value">0</span></div>
+          <div class="stat-row"><span class="stat-label">Format Violations</span><span class="stat-value">0</span></div>
+          <div class="stat-row"><span class="stat-label">Refused</span><span class="stat-value">0</span></div>
+          <div class="stat-row"><span class="stat-label">Accuracy</span><span class="stat-value">0%</span></div>
+        </div>
+      </div>
+
+      <div class="stat-card" id="cohere-stats-card">
+        <h3>Cohere</h3>
+        <div id="cohere-stats">
+          <div class="stat-row"><span class="stat-label">Correct</span><span class="stat-value">0</span></div>
+          <div class="stat-row"><span class="stat-label">Hallucinations</span><span class="stat-value">0</span></div>
+          <div class="stat-row"><span class="stat-label">Format Violations</span><span class="stat-value">0</span></div>
+          <div class="stat-row"><span class="stat-label">Refused</span><span class="stat-value">0</span></div>
+          <div class="stat-row"><span class="stat-label">Accuracy</span><span class="stat-value">0%</span></div>
+        </div>
+      </div>
+
+      <div class="stat-card leader">
+        <h3>Leaderboard</h3>
+        <div id="leaderboard">
+          <div class="stat-row"><span class="stat-label">Leader</span><span class="stat-value" id="leader-name">TBD</span></div>
+          <div class="stat-row"><span class="stat-label">Gemini Accuracy</span><span class="stat-value" id="leader-gemini">&mdash;</span></div>
+          <div class="stat-row"><span class="stat-label">Cohere Accuracy</span><span class="stat-value" id="leader-cohere">&mdash;</span></div>
+          <div class="stat-row"><span class="stat-label">Tests Completed</span><span class="stat-value" id="leader-total">0</span></div>
+        </div>
+      </div>
+
+    </section>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="site-footer">
+    <p>
+      AI Hallucination Evaluation &middot;
+      <a href="https://github.com/ArunGMR0411/ai-hallucination-eval" target="_blank" rel="noopener">Source Code</a> &middot;
+      MIT License
+    </p>
+    <p>
+      Arun Narayanan &middot; MSc Computing (AI), Dublin City University &middot; 2025
+    </p>
+  </footer>
+
+</div>
+
+<!-- Scripts -->
+<script src="questions.js"></script>
+<script src="app.js"></script>
+
+</body>
+</html>

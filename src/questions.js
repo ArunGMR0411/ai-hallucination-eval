@@ -5,14 +5,14 @@
  *   Mode 1: Python Code Execution (50 questions)
  *   Mode 2: Knowledge-Based Questions (50 questions)
  *
- * Author: Arun Narayanan
- * Institution: School of Computing, Dublin City University
- * License: MIT
+ * @author  Arun Narayanan
+ * @institution School of Computing, Dublin City University
+ * @license MIT
  */
 
 "use strict";
 
-var PYTHON_QUESTIONS = [
+const PYTHON_QUESTIONS = [
   // --- Edge Cases (15) ---
   { id: 1,  category: "EdgeCase",      question: "Write code that prints the result of 0.1 plus 0.2 equals 0.3",                                          expectedOutput: "False",  difficulty: "Hard"   },
   { id: 2,  category: "EdgeCase",      question: "Write code that prints the result of empty list equals False",                                            expectedOutput: "False",  difficulty: "Hard"   },
@@ -72,7 +72,7 @@ var PYTHON_QUESTIONS = [
   { id: 50, category: "DataStructure", question: "Write code that finds longest increasing subarray length in [1,2,1,2,3,4,2] and prints it",                   expectedOutput: "4",                  difficulty: "Hard"   }
 ];
 
-var KNOWLEDGE_QUESTIONS = [
+const KNOWLEDGE_QUESTIONS = [
   // --- Polars (15) ---
   { id: 1,  category: "Polars",    question: "What Polars method scans a CSV file lazily without loading into memory?",                         expectedOutput: "scan_csv",     difficulty: "Medium" },
   { id: 2,  category: "Polars",    question: "What Polars method triggers execution of a lazy query plan?",                                     expectedOutput: "collect",      difficulty: "Easy"   },
