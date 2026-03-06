@@ -2,9 +2,10 @@
 
 **Empirical Evaluation of Hallucination Rates in Large Language Models: A Comparative Study of Code Generation and Technical Knowledge Tasks**
 
+*MSc Foundations of AI — Assignment Project, Dublin City University (November 2025)*
+
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![GitHub Pages](https://img.shields.io/badge/demo-live-brightgreen)](https://ArunGMR0411.github.io/ai-hallucination-eval/)
-<!-- [![arXiv](https://img.shields.io/badge/arXiv-XXXX.XXXXX-b31b1b.svg)](https://arxiv.org/abs/XXXX.XXXXX) -->
 
 ---
 
@@ -111,9 +112,9 @@ ai-hallucination-eval/
 │   ├── app.js               # Application logic
 │   ├── questions.js         # 100-question evaluation dataset
 │   └── screenshots/         # Application screenshots
-├── paper/                   # Research paper
-│   ├── paper.pdf            # Published paper
-│   └── figures/             # Paper figures and charts
+├── report/                  # Assignment report
+│   ├── report.tex           # LaTeX source
+│   └── references.bib       # Bibliography
 ├── data/                    # Machine-readable datasets
 │   ├── python_questions.json
 │   ├── knowledge_questions.json
@@ -123,7 +124,6 @@ ai-hallucination-eval/
 ├── .github/workflows/       # CI/CD
 ├── README.md
 ├── LICENSE
-├── CITATION.cff
 ├── CONTRIBUTING.md
 ├── CODE_OF_CONDUCT.md
 └── CHANGELOG.md
@@ -135,28 +135,6 @@ ai-hallucination-eval/
 - **LLM APIs:** [Google Gemini API](https://ai.google.dev/), [Cohere API](https://docs.cohere.com/)
 - **Code Execution:** [Piston API](https://github.com/engineer-man/piston) (sandboxed Python 3.10) — *public API discontinued Feb 2026*
 - **Hosting:** GitHub Pages
-
-## Citation
-
-If you use this work in your research, please cite:
-
-```bibtex
-@article{narayanan2025hallucination,
-  title   = {Empirical Evaluation of Hallucinations in Large Language Models: A Comparative Study of Code Generation and Technical Knowledge Tasks},
-  author  = {Narayanan, Arun},
-  year    = {2025},
-  note    = {School of Computing, Dublin City University}
-}
-```
-
-## References
-
-1. Brown, T. B., et al. (2020). "Language models are few-shot learners." *NeurIPS*, 33, 1877–1901.
-2. Chen, M., et al. (2021). "Evaluating large language models trained on code." arXiv:2107.03374.
-3. Ji, Z., et al. (2023). "Survey of hallucination in natural language generation." *ACM Computing Surveys*, 55(12), 1–38.
-4. Hendrycks, D., et al. (2020). "Measuring massive multitask language understanding." arXiv:2009.03300.
-5. Maynez, J., et al. (2020). "On faithfulness and factuality in abstractive summarization." *ACL*.
-6. Rozière, B., et al. (2024). "Code Llama: Open foundation models for code." arXiv:2308.12950.
 
 ## License
 

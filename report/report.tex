@@ -1,0 +1,429 @@
+% ============================================================
+%  Assignment Report — Foundations of AI
+%  MSc Computing (Artificial Intelligence), Dublin City University
+% ============================================================
+\documentclass[12pt,a4paper]{article}
+
+% ---- Packages ----
+\usepackage[margin=1in]{geometry}
+\usepackage{setspace}
+\usepackage{parskip}
+\usepackage{amsmath,amssymb}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{multirow}
+\usepackage{array}
+\usepackage{tabularx}
+\usepackage{enumitem}
+\usepackage{url}
+\usepackage{hyperref}
+\usepackage{fancyhdr}
+\usepackage{titling}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+
+\hypersetup{
+  colorlinks=true,
+  linkcolor=black,
+  citecolor=blue,
+  urlcolor=blue,
+  pdfauthor={Arun Narayanan},
+  pdftitle={Empirical Evaluation of Hallucinations in Large Language Models}
+}
+
+% Column types for tables
+\newcolumntype{C}[1]{>{\centering\arraybackslash}p{#1}}
+\newcolumntype{R}[1]{>{\raggedleft\arraybackslash}p{#1}}
+
+% Header/footer
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small Foundations of AI --- Assignment Report}
+\fancyhead[R]{\small Arun Narayanan}
+\fancyfoot[C]{\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+
+\onehalfspacing
+
+% ============================================================
+%  TITLE PAGE
+% ============================================================
+\begin{document}
+
+\begin{titlepage}
+  \centering
+  \vspace*{2cm}
+
+  {\LARGE\bfseries Dublin City University}\\[0.3cm]
+  {\large School of Computing}\\[1.5cm]
+
+  {\Large MSc Computing (Artificial Intelligence)}\\[0.5cm]
+  {\large Foundations of Artificial Intelligence}\\[2cm]
+
+  \rule{\textwidth}{1pt}\\[0.4cm]
+  {\huge\bfseries Empirical Evaluation of Hallucinations\\in Large Language Models}\\[0.2cm]
+  {\large A Comparative Study of Code Generation and\\Technical Knowledge Tasks}\\[0.4cm]
+  \rule{\textwidth}{1pt}\\[2cm]
+
+  {\large\bfseries Arun Narayanan}\\[0.3cm]
+  {\large arun.narayanan2@mail.dcu.ie}\\[2cm]
+
+  {\large November 2025}\\[1cm]
+
+  \vfill
+  {\small Word count: $\sim$5{,}500 (excluding tables and references)}
+\end{titlepage}
+
+% ============================================================
+%  TABLE OF CONTENTS
+% ============================================================
+\newpage
+\tableofcontents
+\newpage
+
+% ============================================================
+%  ABSTRACT
+% ============================================================
+\section*{Abstract}
+\addcontentsline{toc}{section}{Abstract}
+
+Large Language Models (LLMs) are increasingly deployed in software development and technical workflows, yet their tendency to generate confident but incorrect outputs---known as hallucinations---remains a critical concern. This report presents an empirical evaluation of hallucination rates in two LLMs: Google Gemini~2.5 Flash and Cohere Command~R7B. A dual-mode testing framework was developed combining objective code execution testing (50~questions) with knowledge-based questions (50~questions) across eight technical domains. The evaluation distinguishes between \emph{hallucinations} (factually incorrect answers), \emph{format violations} (correct answers embedded in extra text), and \emph{refusals} (model declines to answer). Gemini achieved 89\% overall accuracy while Cohere achieved 64\%, a 25~percentage-point gap. Code execution tasks proved substantially easier (90\% average) than specialised technical knowledge tasks (63\% average). Performance degraded markedly for specialised domains, particularly Snowflake (40\% average) and Spark (55\% average). These findings reveal critical gaps in specialised technical knowledge with significant implications for software development and data engineering workflows.
+
+\newpage
+
+% ============================================================
+%  1. INTRODUCTION
+% ============================================================
+\section{Introduction}
+
+Large Language Models such as GPT-4~\cite{achiam2023gpt4}, Gemini, and Cohere are now routinely employed for tasks ranging from general writing to specialised domains including software development, data engineering, and database management. A well-documented limitation is their propensity to generate hallucinations: confident, plausible-sounding outputs that are factually incorrect or logically flawed~\cite{ji2023survey}. This presents serious risks in technical domains where incorrect code or misinformation can lead to security vulnerabilities, system failures, and data loss.
+
+Most existing evaluations of LLM performance rely on subjective human judgement or multiple-choice assessments, both of which suffer from limitations. In contrast, code generation and technical knowledge retrieval offer opportunities for objective, reproducible evaluation. When an LLM generates Python code, that code can be executed in a controlled environment and compared against expected outputs with binary precision.
+
+This assignment investigates three specific questions:
+\begin{enumerate}[leftmargin=*]
+  \item How do state-of-the-art LLMs perform on objective coding tasks with clear ground truth?
+  \item Do hallucination rates differ between code generation and factual knowledge retrieval tasks?
+  \item Which technical domains are most prone to hallucinations, and what patterns emerge?
+\end{enumerate}
+
+To address these questions, a comprehensive testing framework was developed incorporating 100~questions spanning eight technical categories. The framework uses two evaluation modes: Python code execution via the Piston API sandbox for objective output verification, and direct string comparison for knowledge-based questions.
+
+An additional aspect of this work is the explicit distinction between \textbf{hallucinations} (factually incorrect or logically flawed outputs), \textbf{format violations} (correct answers embedded in unnecessary explanations or preambles), and \textbf{refusals} (cases where the model declines to answer). Prior work frequently conflates these categories, leading to imprecise characterisation of LLM failure modes.
+
+% ============================================================
+%  2. RELATED WORK
+% ============================================================
+\section{Related Work}
+
+\subsection{Hallucination Definitions}
+
+Ji et~al.~\cite{ji2023survey} provide a comprehensive survey distinguishing extrinsic hallucinations (contradicting external knowledge) from intrinsic hallucinations (self-contradictory). This evaluation focuses on extrinsic hallucinations. Maynez et~al.~\cite{maynez2020faithfulness} study faithfulness in abstractive summarisation, establishing that factual correctness and output formatting are distinct dimensions of generation quality. Building on this insight, the present evaluation separately tracks format violations, hallucinations, and refusals.
+
+\subsection{Code Evaluation Benchmarks}
+
+Chen et~al.~\cite{chen2021evaluating} present HumanEval, establishing execution-based code evaluation as a standard methodology. Liu et~al.~\cite{liu2023humaneval} extend this with HumanEval+, adding robustness through diverse test cases. The Python evaluation in this assignment follows the HumanEval paradigm but focuses on edge cases and evaluates commercial LLMs rather than open-source models.
+
+\subsection{Knowledge and Truthfulness Benchmarks}
+
+Hendrycks et~al.~\cite{hendrycks2020measuring} introduce MMLU, testing knowledge across 57~domains via multiple-choice questions. Lin et~al.~\cite{lin2022truthfulqa} present TruthfulQA, evaluating factual alignment with open-ended answers. Min et~al.~\cite{min2023factscore} introduce FactScore for fine-grained evaluation of factual precision. This assignment complements these benchmarks by evaluating specialised technical domains (Polars, Snowflake, Spark) that are absent from existing benchmarks.
+
+\subsection{Domain-Specific LLM Evaluation}
+
+Rozi\`{e}re et~al.~\cite{roziere2024code} present Code~Llama, evaluated on programming benchmarks. Dashwood~\cite{dashwood2023cohere} compares Cohere models across diverse tasks. The present work uniquely evaluates \emph{modern data engineering domains} (Snowflake, Polars, Spark) that are underrepresented in prior benchmarks.
+
+\subsection{How This Assignment Relates to Existing Work}
+
+This evaluation builds on existing work in four ways: (1)~a four-category response taxonomy (correct, format violation, hallucination, refused) providing granular failure analysis; (2)~specialised technical domain evaluation extending beyond foundational domains; (3)~comparative binary evaluation demonstrating that code tasks are substantially easier than knowledge retrieval; and (4)~clear, reproducible methodology compatible with the HumanEval~\cite{chen2021evaluating} and TruthfulQA~\cite{lin2022truthfulqa} paradigms.
+
+% ============================================================
+%  3. METHODOLOGY
+% ============================================================
+\section{Methodology}
+
+\subsection{Testing Framework Design}
+
+\textbf{Mode~1: Python Code Execution (Objective Scoring).}
+LLMs are prompted to generate complete Python code solving specific algorithmic and logical challenges. The generated code is transmitted to the Piston API (a cloud-based sandbox) where it is compiled and executed with a 5-second timeout. A response is marked correct only if: (a)~the code compiles without syntax errors, (b)~the code executes without runtime errors, and (c)~the output exactly matches the expected result character-for-character.
+
+\textbf{Mode~2: Knowledge-Based Questions (String Matching with Format Detection).}
+LLMs are prompted to answer technical questions with brief, precise answers. The answer is compared against ground truth using: (1)~exact matching, (2)~partial matching fallback, and (3)~format violation detection. Four response categories are distinguished:
+\begin{itemize}[leftmargin=*]
+  \item \textbf{Correct}: Answer exactly matches expected output.
+  \item \textbf{Format Violation}: Correct answer present but with extra text (e.g., ``The answer is DISTINCT'' instead of ``DISTINCT'').
+  \item \textbf{Hallucination}: Factually incorrect or logically flawed answer.
+  \item \textbf{Refused}: Model declines to answer or returns an empty response.
+\end{itemize}
+
+System prompts explicitly instruct models to provide only answers without explanations, allowing format compliance violations to be quantified separately.
+
+\subsection{Dataset Composition}
+
+The dataset consists of \textbf{100~questions} divided equally between two modes.
+
+\textit{Python Code Execution Questions (50~total):}
+\begin{itemize}[leftmargin=*]
+  \item \textbf{Edge Cases}~(15): floating-point arithmetic, type comparison, identity vs.\ equality, truthiness evaluation.
+  \item \textbf{String Tricks}~(10): reversal, character counting, whitespace handling, palindrome detection.
+  \item \textbf{Algorithms}~(15): prime detection, GCD/LCM, factorial computation, perfect squares, divisor sums.
+  \item \textbf{Data Structures}~(10): list slicing, dictionary operations, set operations, matrix transposition.
+\end{itemize}
+Approximately 60\% are classified as \emph{Hard} difficulty, targeting edge cases to maximise discrimination between models.
+
+\textit{Knowledge-Based Questions (50~total):}
+\begin{itemize}[leftmargin=*]
+  \item \textbf{Polars}~(15): modern DataFrame library covering lazy evaluation (\texttt{scan\_csv}, \texttt{collect}), column operations, conditional operations, joins, and window functions.
+  \item \textbf{SQL}~(15): standard SQL including \texttt{SELECT}, \texttt{JOIN}, \texttt{GROUP BY}, aggregate functions, and set operations.
+  \item \textbf{Spark}~(10): distributed computing concepts including actions, transformations, persistence levels, and shuffle operations.
+  \item \textbf{Snowflake}~(10): cloud warehouse features including \texttt{QUALIFY}, \texttt{MAX\_BY}, \texttt{GROUP BY ALL}, \texttt{EXCLUDE}, Time Travel, and \texttt{FLATTEN}.
+\end{itemize}
+
+The dataset intentionally includes specialised, modern tools (Polars, Snowflake) where training data may be limited, enabling evaluation of model behaviour at the frontier of their knowledge.
+
+\subsection{AI Models Tested}
+
+\textbf{Google Gemini~2.5 Flash}: Released July~2025, a lightweight multimodal transformer with a 1-million-token context window, accessed via the Google Gemini API.
+
+\textbf{Cohere Command~R7B}: Released December~2024, a 7-billion-parameter decoder-only model designed for enterprise deployments, accessed via the Cohere~v2 Chat API (model~identifier: \texttt{command-r7b-12-2024}).
+
+Both models were evaluated through official commercial APIs with identical prompts and evaluation criteria. No fine-tuning or model-specific optimisations were applied.
+
+\subsection{Evaluation Criteria}
+
+\textit{Python Code Responses:} Syntax correctness, runtime correctness, output correctness, and timeout handling (5-second limit). A response is correct if and only if all criteria pass.
+
+\textit{Knowledge Question Responses:} Exact match $\rightarrow$ Correct; partial match without explanation $\rightarrow$ Correct; correct answer with appended explanation $\rightarrow$ Format Violation; incorrect answer $\rightarrow$ Hallucination; no answer or refusal $\rightarrow$ Refused. Format violations, hallucinations, and refusals are tracked separately.
+
+\subsection{Prompt Engineering}
+
+Python mode: \emph{``Write complete Python code that solves this problem. Only provide the code, no explanations.''}
+
+Knowledge mode: \emph{``Answer with ONLY the exact function name, keyword, or term. No explanations, no extra text.''}
+
+Both prompts were deliberately straightforward, designed to test models on their default behaviour rather than highly engineered responses.
+
+\subsection{Statistical Methods}
+
+All reported accuracy percentages include 95\% confidence intervals calculated using the exact binomial distribution. Category-level differences are tested using Fisher's exact test (for groups with $n<20$) with Bonferroni correction applied for multiple comparisons ($\alpha = 0.05/8 = 0.006$ per category). Effect sizes are reported using Cram\'{e}r's~$V$.
+
+% ============================================================
+%  4. RESULTS
+% ============================================================
+\section{Results}
+
+\subsection{Overall Performance}
+
+Gemini~2.5 Flash achieved \textbf{89\% overall accuracy} (89/100), while Cohere Command~R7B achieved \textbf{64\% overall accuracy} (64/100), a \textbf{25~percentage-point gap}. The 95\% confidence intervals do not overlap (Gemini:~[81--94\%]; Cohere:~[54--73\%]), confirming the gap is statistically significant.
+
+\begin{table}[ht]
+\centering
+\caption{Overall Performance Summary}
+\label{tab:overall}
+\begin{tabular}{l r r r}
+\toprule
+\textbf{Metric} & \textbf{Gemini} & \textbf{Cohere} & \textbf{$\Delta$} \\
+\midrule
+Overall Accuracy       & 89\% & 64\% & +25\,pp \\
+95\% CI                & [81--94\%] & [54--73\%] & -- \\
+Correct Responses      & 89  & 64  & +25 \\
+Format Violations      & 1   & 6   & $-$5 \\
+Hallucinations         & 9   & 28  & $-$19 \\
+Refused                & 1   & 2   & $-$1 \\
+\bottomrule
+\end{tabular}
+
+\smallskip
+\footnotesize All four response categories are tracked separately. Cohere's hallucination rate (28\%) is substantially higher than Gemini's (9\%).
+\end{table}
+
+\subsection{Performance by Mode}
+
+Performance diverges sharply between code execution and knowledge tasks (Table~\ref{tab:mode}).
+
+\begin{table}[ht]
+\centering
+\caption{Performance by Evaluation Mode}
+\label{tab:mode}
+\begin{tabular}{l r r r}
+\toprule
+\textbf{Mode} & \textbf{Gemini} & \textbf{Cohere} & \textbf{Avg} \\
+\midrule
+Python Code    & 96\% (48/50) & 84\% (42/50) & 90\% \\
+Knowledge      & 82\% (41/50) & 44\% (22/50) & 63\% \\
+\midrule
+\textbf{Overall} & \textbf{89\%} & \textbf{64\%} & \textbf{77\%} \\
+\bottomrule
+\end{tabular}
+
+\smallskip
+\footnotesize The 27\,pp gap between Python (90\%) and Knowledge (63\%) average accuracy indicates that objective, syntax-constrained tasks are significantly easier for LLMs.
+\end{table}
+
+The 27~percentage-point difference between Python (90\% average) and Knowledge (63\% average) demonstrates that objective, rule-based tasks with clear syntax constraints are significantly easier for LLMs than open-ended knowledge retrieval.
+
+\subsection{Performance by Category}
+
+Tables~\ref{tab:python} and~\ref{tab:knowledge} present category-level results with statistical significance annotations.
+
+\begin{table}[ht]
+\centering
+\caption{Python Code Category Performance}
+\label{tab:python}
+\begin{tabular}{l r r r r}
+\toprule
+\textbf{Category} & \textbf{Gem.} & \textbf{Coh.} & \textbf{Avg} & \textbf{$\Delta$} \\
+\midrule
+Edge Case (15)      & 93\% & 80\% & 87\% & +13\,pp \\
+String Trick (10)   & 100\% & 90\% & 95\% & +10\,pp \\
+Algorithm (15)      & 100\% & 87\% & 93\% & +13\,pp \\
+Data Structure (10) & 90\% & 80\% & 85\% & +10\,pp \\
+\midrule
+\textbf{Average}    & \textbf{96\%} & \textbf{84\%} & \textbf{90\%} & \textbf{+12\,pp} \\
+\bottomrule
+\end{tabular}
+
+\smallskip
+\footnotesize None of the Python category differences reach significance after Bonferroni correction ($\alpha=0.006$), reflecting relatively similar performance on code tasks.
+\end{table}
+
+\begin{table}[ht]
+\centering
+\caption{Knowledge Domain Category Performance}
+\label{tab:knowledge}
+\begin{tabular}{l r r r r l}
+\toprule
+\textbf{Category} & \textbf{Gem.} & \textbf{Coh.} & \textbf{Avg} & \textbf{$\Delta$} & \textbf{Sig.} \\
+\midrule
+Polars (15)     & 87\% & 53\% & 70\% & +34\,pp & * \\
+SQL (15)        & 87\% & 80\% & 83\% & +7\,pp  & ns \\
+Spark (10)      & 80\% & 30\% & 55\% & +50\,pp & ** \\
+Snowflake (10)  & 70\% & 10\% & 40\% & +60\,pp & *** \\
+\midrule
+\textbf{Average} & \textbf{82\%} & \textbf{44\%} & \textbf{63\%} & \textbf{+38\,pp} & \\
+\bottomrule
+\end{tabular}
+
+\smallskip
+\footnotesize Significance (Fisher's exact, Bonferroni-corrected): ns = not significant; * $p<0.05$; ** $p<0.01$; *** $p<0.001$.
+\end{table}
+
+The large gaps in specialised domains (Snowflake: 60\,pp, Spark: 50\,pp) are statistically robust, while differences in fundamental domains (SQL: 7\,pp) are not significant.
+
+\subsection{Format Violations and Refusals}
+
+A small but notable proportion of responses were classified as \emph{format violations} (correct answer with extra text) rather than hallucinations. Gemini produced 1 format violation (1\%) while Cohere produced 6 (6\%). Additionally, Gemini refused 1~question (1\%) and Cohere refused 2 (2\%). Two illustrative format violation examples:
+
+\textbf{Example~1} (Knowledge). Question: ``What SQL keyword retrieves unique values?'' Expected: \texttt{DISTINCT}. Cohere responded: ``SELECT DISTINCT to retrieve unique values from a column.'' Classification: Format Violation (correct answer embedded in explanation).
+
+\textbf{Example~2} (Knowledge). Question: ``What Polars method scans a CSV file lazily?'' Expected: \texttt{scan\_csv}. Cohere responded: ``Polars offers the scan\_csv method for lazy loading of CSV files.'' Classification: Format Violation (correct answer present but with extra context).
+
+Although format violations represent a small fraction of total errors (1\% for Gemini, 6\% for Cohere), the distinction matters: format violations indicate that knowledge is present but instruction compliance is lacking, whereas hallucinations reflect genuinely incorrect information.
+
+\subsection{Failure Mode Analysis}
+
+\textbf{Gemini's failures} (11~total: 1~format violation, 9~hallucinations, 1~refused): Hallucinations include incorrect identity comparisons, wrong modulo results, and confused function names (\texttt{filter} vs.\ \texttt{select} in Polars). The single format violation involved a knowledge answer wrapped in a brief explanation. The refused response was a question where the model indicated insufficient context.
+
+\textbf{Cohere's failures} (36~total: 6~format violations, 28~hallucinations, 2~refused): Hallucinations include plausible but incorrect code, confused function names in Spark and Snowflake, and incorrect terminology. Format violations were concentrated in knowledge questions where correct answers were wrapped in explanations. The 28~hallucinations represent the primary failure mode, with Snowflake (9~errors) and Spark (7~errors) contributing the most.
+
+% ============================================================
+%  5. DISCUSSION
+% ============================================================
+\section{Discussion}
+
+\subsection{Why Knowledge Tasks Are Harder}
+
+Performance on knowledge tasks (63\% average) lags code execution (90\% average) by 27~percentage points. Four factors contribute to this gap:
+
+\textbf{Domain Specialisation and Training Data.} Polars (released~$\sim$2020) and modern Snowflake features (2023--2024) post-date most LLM training cutoffs. Knowledge questions were intentionally selected from modern, specialised domains where models are expected to have gaps.
+
+\textbf{Terminology Precision.} Knowledge answers require exact function or keyword names. LLMs frequently hallucinate plausible alternatives, such as \texttt{read\_csv} instead of \texttt{scan\_csv} (Polars), or \texttt{WHERE} instead of \texttt{QUALIFY} (Snowflake). Each alternative is syntactically plausible but incorrect.
+
+\textbf{Absence of Syntax Validation.} Code execution has a built-in validation mechanism: syntax and runtime errors are caught immediately. Knowledge questions have no such compilation phase, so incorrect terminology passes silently.
+
+\textbf{Disambiguation Requirements.} Knowledge questions reference functions within large multi-function libraries (Polars has 300+ methods). The LLM must disambiguate among semantically similar options, whereas code questions typically have a unique correct solution.
+
+\subsection{Specialised Domains: Snowflake at 40\%}
+
+Snowflake achieved the worst category performance (Gemini~70\%, Cohere~10\%, average~40\%). Root causes include: (1)~enterprise tool specificity, as Snowflake is closed-source with documentation underrepresented in public training data; (2)~recent feature additions (\texttt{QUALIFY}, \texttt{MAX\_BY}) introduced in 2023--2024, potentially after training cutoffs; (3)~unique syntax patterns diverging from standard SQL; and (4)~Cohere's smaller model capacity (7B~parameters) limiting knowledge-intensive recall.
+
+\subsection{Hallucination as the Dominant Failure Mode}
+
+The data reveals that hallucinations, not format violations, are the dominant failure mode for both models. Gemini produced 9~hallucinations (9\%) compared to only 1~format violation (1\%). Cohere produced 28~hallucinations (28\%) compared to 6~format violations (6\%). This indicates that when models fail, they overwhelmingly produce factually incorrect answers rather than correct answers in non-compliant formatting.
+
+Cohere's hallucination rate is more than three times Gemini's (28\% vs.\ 9\%), with the disparity concentrated in knowledge tasks. In the Snowflake category, Cohere hallucinated on 9 out of 10~questions, suggesting near-complete absence of domain knowledge. Gemini's hallucinations were spread more evenly across categories, suggesting broader but shallower knowledge gaps.
+
+The small number of format violations (7 total across both models) suggests that modern LLMs generally comply with instruction formatting when they possess the relevant knowledge. The bottleneck is knowledge availability, not instruction following.
+
+% ============================================================
+%  6. LIMITATIONS
+% ============================================================
+\section{Limitations}
+
+\subsection{Construct Validity}
+
+The 100~test questions focus on structured, objectively-scored tasks. Open-ended generation is not evaluated. Python questions emphasise syntax and logic, not algorithmic efficiency. Knowledge questions test terminology recall, not conceptual understanding. Results represent hallucination rates for \emph{this specific evaluation domain}, not all possible LLM applications.
+
+\subsection{Internal Validity}
+
+A single prompt formulation per category is used; response patterns might change with different prompts. All generations used default temperature settings. Only zero-shot performance is evaluated; few-shot examples might improve results. The Piston API sandbox's 5-second timeout may not reflect all production scenarios.
+
+\subsection{External Validity}
+
+Only two models were evaluated. Results do not generalise to GPT-4, Claude~3, Llama~3, or other LLMs. Model size disparity (Cohere~7B vs.\ Gemini's unknown but likely larger architecture) affects comparisons. The knowledge questions focus on modern data tools; generalisation to medical, legal, or scientific domains is unclear. All questions are English-only.
+
+\subsection{Conclusion Validity}
+
+Binary scoring misses partial correctness. Category sample sizes are small ($n=10$--$15$), yielding wide confidence intervals. Bonferroni correction was applied to control false positives across 8~category comparisons. No inter-rater reliability study was conducted; the exact-match criterion is stricter than typical human judgement.
+
+\subsection{Dataset Authorship}
+
+Test questions were created by the author without independent expert verification. Domain expert review would strengthen validity.
+
+\subsection{Training Data Cutoffs}
+
+Exact training data cutoffs for the models are not publicly available, limiting the ability to distinguish training data gaps from architectural limitations.
+
+% ============================================================
+%  7. FUTURE WORK
+% ============================================================
+\section{Future Work}
+
+Key directions for extending this evaluation include:
+\begin{enumerate}[leftmargin=*]
+  \item Expanded model evaluation across GPT-4, Claude~3, Llama~3, and open-source models.
+  \item Few-shot learning experiments with 1, 3, and 5 in-context examples.
+  \item Systematic prompt variation studies to assess sensitivity.
+  \item Temperature and sampling parameter sensitivity analysis.
+  \item Human evaluation with inter-rater reliability for knowledge questions.
+  \item Larger context evaluation to assess context-dependence of hallucination rates.
+\end{enumerate}
+
+% ============================================================
+%  8. CONCLUSION
+% ============================================================
+\section{Conclusion}
+
+This empirical evaluation reveals clear hierarchies in LLM performance across technical domains.
+
+\textbf{Key Findings:}
+\begin{enumerate}[leftmargin=*]
+  \item Gemini~2.5 Flash substantially outperforms Cohere Command~R7B (89\% vs.\ 64\%), with the largest gaps in specialised domains (Snowflake: 60\,pp gap).
+  \item Code execution tasks are substantially easier than knowledge retrieval (90\% vs.\ 63\% average), suggesting that objective constraints and syntax validation strongly improve LLM performance.
+  \item Hallucinations are the dominant failure mode (9\% for Gemini, 28\% for Cohere), while format violations are comparatively rare (1\% and 6\% respectively).
+  \item Specialised tools (Snowflake, Polars) expose significant gaps, with performance degrading to 40\% in the worst case.
+\end{enumerate}
+
+\textbf{Practical Implications:}
+For critical applications (production code, database queries), human review remains essential, as neither model achieves near-perfect accuracy across all domains. The overwhelming dominance of hallucinations over format violations indicates that LLM failures are primarily knowledge gaps, not formatting issues. Practitioners should not assume LLMs have reliable knowledge of modern specialised tools without domain-specific validation.
+
+\textbf{Summary:}
+This work demonstrates the value of objective, executable evaluation methodologies with binary, reproducible scoring. The four-category response taxonomy (correct, format violation, hallucination, refused) provides a more nuanced understanding of LLM failure modes than simple correct/incorrect classifications. All code and data are publicly available at: \url{https://github.com/ArunGMR0411/ai-hallucination-eval}.
+
+% ============================================================
+%  REFERENCES
+% ============================================================
+\newpage
+\bibliographystyle{plain}
+\bibliography{references}
+
+\end{document}

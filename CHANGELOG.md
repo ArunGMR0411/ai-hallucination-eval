@@ -19,7 +19,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ### Added
 - Format violation detection with answer extraction from verbose model outputs
-- `CITATION.cff` for machine-readable citation
 - GitHub Actions workflow for automatic GitHub Pages deployment
 - Comprehensive `README.md` with architecture diagram, results table, and setup instructions
 - `CONTRIBUTING.md`, `CODE_OF_CONDUCT.md`, `CHANGELOG.md`
