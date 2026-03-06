@@ -126,7 +126,7 @@ const KNOWLEDGE_QUESTIONS = [
   { id: 44, category: "Snowflake", question: "What Snowflake clause selects all columns except specified ones?",                               expectedOutput: "EXCLUDE",          difficulty: "Hard"   },
   { id: 45, category: "Snowflake", question: "What Snowflake function returns the value with minimum associated measure?",                     expectedOutput: "MIN_BY",           difficulty: "Hard"   },
   { id: 46, category: "Snowflake", question: "What Snowflake feature allows querying data as it existed at past timestamp?",                   expectedOutput: "Time Travel",      difficulty: "Medium" },
-  { id: 47, category: "Snowflake", question: "What Snowflake clause renames columns in SELECT without AS keyword?",                            expectedOutput: "RENAME",           difficulty: "Hard"   },
+  { id: 47, category: "Snowflake", question: "In Snowflake, which clause allows you to assign aliases to a subset of columns while still retrieving all other columns using the asterisk (*) wildcard?", expectedOutput: "RENAME", difficulty: "Hard" },
   { id: 48, category: "Snowflake", question: "What Snowflake function flattens nested JSON arrays into rows?",                                 expectedOutput: "FLATTEN",          difficulty: "Medium" },
   { id: 49, category: "Snowflake", question: "What Snowflake object stores query results for reuse without recomputation?",                    expectedOutput: "Result Cache",     difficulty: "Medium" },
   { id: 50, category: "Snowflake", question: "What Snowflake clause replaces columns with new expressions inline?",                            expectedOutput: "REPLACE",          difficulty: "Hard"   }

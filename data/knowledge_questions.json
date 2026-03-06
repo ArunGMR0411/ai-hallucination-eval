@@ -335,7 +335,7 @@
     {
       "id": 47,
       "category": "Snowflake",
-      "question": "What Snowflake clause renames columns in SELECT without AS keyword?",
+      "question": "In Snowflake, which clause allows you to assign aliases to a subset of columns while still retrieving all other columns using the asterisk (*) wildcard?",
       "expectedOutput": "RENAME",
       "difficulty": "Hard"
     },
