@@ -7,7 +7,7 @@ Thank you for your interest in contributing to this project.
 1. **Fork** the repository.
 2. **Create a branch** for your feature or fix: `git checkout -b feature/your-feature`.
 3. **Make your changes** with clear, descriptive commit messages.
-4. **Test locally** — open `docs/index.html` in a browser and verify both evaluation modes work.
+4. **Test locally** — open `src/index.html` in a browser and verify both evaluation modes work.
 5. **Submit a pull request** with a clear description of what you changed and why.
 
 ## Areas for Contribution

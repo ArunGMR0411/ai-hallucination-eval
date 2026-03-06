@@ -2,10 +2,10 @@
   "name": "ai-hallucination-eval",
   "version": "1.0.0",
   "description": "Interactive tool for evaluating LLM hallucinations in Python code generation and domain knowledge",
-  "main": "docs/app.js",
+  "main": "src/app.js",
   "scripts": {
-    "dev": "http-server docs -p 8080 -c-1",
-    "serve": "http-server docs -p 3000"
+    "dev": "http-server src -p 8080 -c-1",
+    "serve": "http-server src -p 3000"
   },
   "keywords": [
     "LLM",
